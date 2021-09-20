@@ -40,16 +40,20 @@ def load_data(data_file):
         i = 0
         for part in condition['and']:
             i += 1
+            element_list = []
             if isinstance(part, list):
                 for element in part:
                     if isinstance(element, dict):
                         for not_element in element['not']:
+                            element_list.append(not_element * -1)
                             print(f"{not_element * -1} not_element part{i}")
                     else:
+                        element_list.append(element)
                         print(f"{element} element part{i}")
             else:
+                element_list.append(part)
                 print(f"{part} part{i}")
-
+            print(element_list)
 
 
 if __name__ == '__main__':
