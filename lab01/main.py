@@ -1,7 +1,6 @@
 import json
 import argparse
 
-rules = []
 
 def create_args():
     """Создание аргументов командной строки
@@ -33,7 +32,6 @@ def load_data(data_file):
     rules_dict = {}
     f_json = open(data_file, 'r')
     rules = json.load(f_json)
-    print(rules)
     for rule in rules:
         condition = rule['if']
         result = rule['then']
