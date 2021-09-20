@@ -46,14 +46,17 @@ def load_data(data_file):
                     if isinstance(element, dict):
                         for not_element in element['not']:
                             element_list.append(not_element * -1)
-                            print(f"{not_element * -1} not_element part{i}")
                     else:
                         element_list.append(element)
-                        print(f"{element} element part{i}")
             else:
-                element_list.append(part)
-                print(f"{part} part{i}")
-            print(element_list)
+                if isinstance(part, dict):
+                    for not_element in part['not']:
+                        element_list.append(not_element * -1)
+                else:
+                    element_list.append(part)
+
+            rules_dict.update({tuple(element_list): result})
+    print(rules_dict)
 
 
 if __name__ == '__main__':
