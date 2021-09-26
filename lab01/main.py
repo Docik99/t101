@@ -50,9 +50,9 @@ def load_data(data_file):
     for g in graph_list:
         union_graph = nx.compose(union_graph, g)
 
-    # for g in union_graph:
-    #     for nbr in union_graph[g]:
-    #         print(f"{g} ---> {nbr}")
+    for g in union_graph:
+        for nbr in union_graph[g]:
+            print(f"{g} ---> {nbr}")
 
     nx.draw(union_graph, with_labels=True)
     plt.show()
@@ -88,6 +88,16 @@ def check_rule(graphs, facts):
                         else:  # если узел конечен => это следствие из правила а не условие
                             new_fact = nbr
                 facts.append(new_fact)
+
+    for edge in graphs:
+        if edge < 0:
+            for nbr in graphs[edge]:
+                if graphs.has_edge(nbr, edge):
+                    if graphs[nbr][edge][0]['log'] == 'not':
+                        for nbr2 in graphs[nbr]:
+                            if nbr2 == edge and nbr not in facts:
+                                facts.append(nbr)
+
     return facts
 
 
