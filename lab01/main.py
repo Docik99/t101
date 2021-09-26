@@ -28,19 +28,20 @@ def load_data(data_file):
     graph_list = []
     f_json = open(data_file, 'r')
     rules = json.load(f_json)
+    oper = 0
 
     for rule in rules:
         condition = rule['if']
         result = rule['then']
+        oper -= 1
         for operation in condition:
             graph = nx.DiGraph()
-            oper = 0
-            if operation == 'and':
-                oper = -1
-            elif operation == 'or':
-                oper = -2
-            elif operation == 'not':
-                oper = -3
+            # if operation == 'and':
+            #     oper = -1
+            # elif operation == 'or':
+            #     oper = -2
+            # elif operation == 'not':
+            #     oper = -3
             for element in condition[operation]:
                 graph.add_edge(element, oper)
             graph.add_edge(oper, result[0])
