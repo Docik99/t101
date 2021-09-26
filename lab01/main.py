@@ -32,9 +32,9 @@ def load_data(data_file):
     for rule in rules:
         condition = rule['if']
         result = rule['then']
-        #element_list = []
         for operation in condition:
             graph = nx.DiGraph()
+            oper = 0
             if operation == 'and':
                 oper = -1
             elif operation == 'or':
@@ -43,12 +43,13 @@ def load_data(data_file):
                 oper = -3
             for element in condition[operation]:
                 graph.add_edge(element, oper)
-                #element_list.append(element)
             graph.add_edge(oper, result[0])
             graph_list.append(graph)
-        #rules_dict.update({tuple(element_list): result})
+
+    union_graph = graph_list.pop(0)
     for g in graph_list:
-        nx.draw(g, with_labels=True)
+        union_graph = nx.compose(union_graph, g)
+        nx.draw(union_graph, with_labels=True)
         plt.show()
     return graph_list
 
