@@ -63,6 +63,9 @@ def load_data(data_file):
         if isinstance(condition, list):
             for element in condition:
                 element_list.append(element)
+        rules_dict.update({tuple(element_list): result})
+    print(rules_dict)
+
 
 
 def check_rule(check_file, rule):
@@ -75,5 +78,3 @@ if __name__ == '__main__':
     if args.operation == 'd':
         rules = load_data(args.file)
         check_rule(rules, tuple([5, 3]))
-    # elif args.operation == 'c':
-    #     check_rule(args.file)
