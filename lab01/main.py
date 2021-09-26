@@ -41,7 +41,10 @@ def load_data(data_file):
             for element in condition[operation]:
                 graph.add_edge(element, i, log=operation)
 
-            graph.add_edge(i, result[0], log=None)
+            if isinstance(result, list):
+                graph.add_edge(i, result[0], log=None)
+            else:
+                graph.add_edge(i, result, log=None)
             graph_list.append(graph)
 
     union_graph = graph_list.pop(0)
