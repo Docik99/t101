@@ -29,29 +29,26 @@ def load_data(data_file):
     f_json = open(data_file, 'r')
     rules = json.load(f_json)
     oper = 0
+    i = 0
 
     for rule in rules:
         condition = rule['if']
         result = rule['then']
-        oper -= 1
+        i -= 1
         for operation in condition:
             graph = nx.DiGraph()
-            # if operation == 'and':
-            #     oper = -1
-            # elif operation == 'or':
-            #     oper = -2
-            # elif operation == 'not':
-            #     oper = -3
+
             for element in condition[operation]:
-                graph.add_edge(element, oper)
-            graph.add_edge(oper, result[0])
+                graph.add_edge(element, i, log=operation)
+
+            graph.add_edge(i, result[0], log=None)
             graph_list.append(graph)
 
     union_graph = graph_list.pop(0)
     for g in graph_list:
         union_graph = nx.compose(union_graph, g)
-        nx.draw(union_graph, with_labels=True)
-        plt.show()
+    nx.draw(union_graph, with_labels=True)
+    plt.show()
     return graph_list
 
 
