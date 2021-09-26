@@ -4,7 +4,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-
 def create_args():
     """
     Создание аргументов командной строки
@@ -29,7 +28,6 @@ def load_data(data_file):
     f_json = open(data_file, 'r')
     rules = json.load(f_json)
     oper = 0
-    i = 0
 
     for rule in rules:
         condition = rule['if']
@@ -63,36 +61,33 @@ def load_data(data_file):
 
 
 def check_rule(graphs, facts):
-    if isinstance(graphs, list):
-        for graph in graphs:
-            for fact in facts:
-                for nbr in graph[fact]:
-                    all_child = -1
-                    fact_child = 0
-                    new_fact = 0
-                    for nbr2 in graph[nbr]:
-                        all_child += 1
-                        if nbr2 in facts:
-                            fact_child += 1
-                        else:
-                            new_fact = nbr2
-                    if fact_child == all_child:
-                        facts.append(new_fact)
+    for fact in facts:
+        for op in graphs[fact]:
+            new_fact = 0
 
-    else:
-        for fact in facts:
-            for nbr in graphs[fact]:
+            if graphs[fact][op][0]['log'] == 'and':
                 all_child = -1
                 fact_child = 0
-                new_fact = 0
-                for nbr2 in graphs[nbr]:
+                for nbr in graphs[op]:
                     all_child += 1
-                    if nbr2 in facts:
+                    if nbr in facts:
                         fact_child += 1
                     else:
-                        new_fact = nbr2
+                        new_fact = nbr
                 if fact_child == all_child:
                     facts.append(new_fact)
+
+            elif graphs[fact][op][0]['log'] == 'or':
+                for nbr in graphs[op]:
+                    if nbr not in facts:
+                        if len(graphs[nbr]) > 1:
+                            for nbr2 in graphs[nbr]:
+                                if nbr2 != nbr:
+                                    new_fact = nbr
+                                    break
+                        else:  # если узел конечен => это следствие из правила а не условие
+                            new_fact = nbr
+                facts.append(new_fact)
     return facts
 
 
@@ -100,5 +95,5 @@ if __name__ == '__main__':
     parsers = create_args()
     args = parsers.parse_args()
     rules = load_data(args.file)
-    answer = check_rule(rules, [11,10,3,8,9])
+    answer = check_rule(rules, [11, 10, 8, 9])
     print(answer)
