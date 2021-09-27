@@ -1,6 +1,7 @@
 import json
 import argparse
 import networkx as nx
+from time import time
 import matplotlib.pyplot as plt
 
 
@@ -24,43 +25,32 @@ def load_data(data_file):
     :param data_file: файл с правилами
     :return: словарь с обработанными правилами
     """
-    graph_list = []
     f_json = open(data_file, 'r')
     rules = json.load(f_json)
     oper = 0
+    graph = nx.MultiDiGraph()
+    count_rules = 0
 
     for rule in rules:
+        count_rules += 1
         condition = rule['if']
         result = rule['then']
         oper -= 1
         for operation in condition:
-            graph = nx.MultiDiGraph()
 
             for element in condition[operation]:
                 graph.add_edge(element, oper, log=operation)
                 graph.add_edge(oper, element, log=None)
 
             if isinstance(result, list):
-                graph.add_edge(oper, result[0], log=None)
+                graph.add_edge(oper, result[0], log=operation)
             else:
-                graph.add_edge(oper, result, log=None)
-            graph_list.append(graph)
+                graph.add_edge(oper, result, log=operation)
 
-    union_graph = graph_list.pop(0)
-    for g in graph_list:
-        union_graph = nx.compose(union_graph, g)
-
-    for g in union_graph:
-        for nbr in union_graph[g]:
-            print(f"{g} ---> {nbr}")
-
-    nx.draw(union_graph, with_labels=True)
-    plt.show()
-
-    return union_graph
+    return graph, count_rules
 
 
-def check_rule(graphs, facts):
+def check_rule(graphs, facts, count_rules):
     for fact in facts:
         for op in graphs[fact]:
             new_fact = 0
@@ -89,14 +79,22 @@ def check_rule(graphs, facts):
                             new_fact = nbr
                 facts.append(new_fact)
 
-    for edge in graphs:
-        if edge < 0:
-            for nbr in graphs[edge]:
-                if graphs.has_edge(nbr, edge):
-                    if graphs[nbr][edge][0]['log'] == 'not':
-                        for nbr2 in graphs[nbr]:
-                            if nbr2 == edge and nbr not in facts:
+    for edge in range(count_rules * -1, 0):
+        for nbr in graphs[edge]:
+            if graphs.has_edge(edge, nbr):
+                if nbr not in facts:
+                    if graphs[edge][nbr][0]['log'] == 'not':
+                        if isinstance(graphs[nbr], list):
+                            for dubl_op in graphs[nbr]:
+                                for dubl_el in graphs[dubl_op]:
+                                    if dubl_el not in facts:
+                                        if graphs[dubl_op][dubl_el][0]['log'] == 'not':
+                                            facts.append(dubl_el)
+                        else:
+                            if graphs[edge][nbr][0]['log'] == 'not':
                                 facts.append(nbr)
+                else:
+                    break
 
     return facts
 
@@ -104,6 +102,15 @@ def check_rule(graphs, facts):
 if __name__ == '__main__':
     parsers = create_args()
     args = parsers.parse_args()
-    rules = load_data(args.file)
-    answer = check_rule(rules, [11, 10, 8, 9])
+
+    time_start = time()
+
+    rules, count_rules = load_data(args.file)
+    nx.draw(rules, with_labels=True)
+    plt.show()
+
+    print(time() - time_start)
+
+    answer = check_rule(rules, [10,9,8,11], count_rules)
+
     print(answer)
