@@ -1,6 +1,7 @@
 from random import choice, shuffle, randint
 from time import time
 import json
+import networkx as nx
 
 
 def generate_simple_rules(code_max, n_max, n_generate, log_oper_choice=["and", "or", "not"]):
@@ -104,27 +105,22 @@ def generate_rand_facts(code_max, M):
 
 
 # samples:
-print(generate_simple_rules(100, 4, 10))
-print(generate_random_rules(100, 4, 10))
-print(generate_stairway_rules(100, 4, 10, ["or"]))
-print(generate_ring_rules(100, 4, 10, ["or"]))
+# print(generate_simple_rules(100, 4, 10))
+# print(generate_random_rules(100, 4, 10))
+# print(generate_stairway_rules(100, 4, 10, ["or"]))
+# print(generate_ring_rules(100, 4, 10, ["or"]))
+# print(generate_rand_facts(100, 10))
 
 # generate rules and facts and check time
-time_start = time()
+
 N = 100000
 M = 1000
+
 rules = generate_simple_rules(100, 4, N)
-f_json = open(f"rules.json", "w")
-json.dump(rules, f_json)
+r_json = open(f"rules.json", "w")
+json.dump(rules, r_json)
+
 facts = generate_rand_facts(100, M)
-print("%d rules generated in %f seconds" % (N, time() - time_start))
+f_json = open(f"facts.json", "w")
+json.dump(facts, f_json)
 
-# load and validate rules
-# YOUR CODE HERE
-
-# check facts vs rules
-time_start = time()
-
-# YOUR CODE HERE
-
-print("%d facts validated vs %d rules in %f seconds" % (M, N, time() - time_start))
