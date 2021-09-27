@@ -17,12 +17,7 @@ def create_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'rules_file',
-        help='input way to file',
-        type=str,
-    )
-    parser.add_argument(
-        'facts_file',
+        'file',
         help='input way to file',
         type=str,
     )
@@ -60,59 +55,58 @@ def load_data(data_file):
     return graph, count_rules
 
 
-def check_rule(graphs, facts_file, count_rules):
+def check_rule(graph, facts, count_rules):
     """
     Проверка фактов по внесенным правилам
-    :param graphs: ориентированный мультиграф
+    :param graph: ориентированный мультиграф
     :param facts: список фактов
+    :param count_rules: количество правил
     :return:
         facts: новый список фактов
     """
-    r_json = open(facts_file, 'r')
-    facts = json.load(r_json)
 
     for fact in facts:
-        if fact in graphs:
-            for op in graphs[fact]:
-                new_fact = 0
+        if fact in graph:
+                for op in graph[fact]:
+                    new_fact = 0
 
-                if graphs[fact][op][0]['log'] == 'and':
-                    all_child = -1
-                    fact_child = 0
-                    for nbr in graphs[op]:
-                        all_child += 1
-                        if nbr in facts:
-                            fact_child += 1
-                        else:
-                            new_fact = nbr
-                    if fact_child == all_child:
+                    if graph[fact][op][0]['log'] == 'and':
+                        all_child = -1
+                        fact_child = 0
+                        for nbr in graph[op]:
+                            all_child += 1
+                            if nbr in facts:
+                                fact_child += 1
+                            else:
+                                new_fact = nbr
+                        if fact_child == all_child:
+                            facts.append(new_fact)
+
+                    elif graph[fact][op][0]['log'] == 'or':
+                        for nbr in graph[op]:
+                            if nbr not in facts:
+                                if len(graph[nbr]) > 1:
+                                    for nbr2 in graph[nbr]:
+                                        if nbr2 != nbr:
+                                            new_fact = nbr
+                                            break
+                                else:  # если узел конечен => это следствие из правила а не условие
+                                    new_fact = nbr
                         facts.append(new_fact)
 
-                elif graphs[fact][op][0]['log'] == 'or':
-                    for nbr in graphs[op]:
-                        if nbr not in facts:
-                            if len(graphs[nbr]) > 1:
-                                for nbr2 in graphs[nbr]:
-                                    if nbr2 != nbr:
-                                        new_fact = nbr
-                                        break
-                            else:  # если узел конечен => это следствие из правила а не условие
-                                new_fact = nbr
-                    facts.append(new_fact)
-
     for edge in range(count_rules * -1, 0):
-        for nbr in graphs[edge]:
-            if graphs.has_edge(edge, nbr):
+        for nbr in graph[edge]:
+            if graph.has_edge(edge, nbr):
                 if nbr not in facts:
-                    if graphs[edge][nbr][0]['log'] == 'not':
-                        if isinstance(graphs[nbr], list):
-                            for dubl_op in graphs[nbr]:
-                                for dubl_el in graphs[dubl_op]:
+                    if graph[edge][nbr][0]['log'] == 'not':
+                        if isinstance(graph[nbr], list):
+                            for dubl_op in graph[nbr]:
+                                for dubl_el in graph[dubl_op]:
                                     if dubl_el not in facts:
-                                        if graphs[dubl_op][dubl_el][0]['log'] == 'not':
+                                        if graph[dubl_op][dubl_el][0]['log'] == 'not':
                                             facts.append(dubl_el)
                         else:
-                            if graphs[edge][nbr][0]['log'] == 'not':
+                            if graph[edge][nbr][0]['log'] == 'not':
                                 facts.append(nbr)
                 else:
                     break
@@ -126,14 +120,14 @@ if __name__ == '__main__':
 
     time_start = time()
 
-    rules, count_rules = load_data(args.rules_file)
+    rules, count_rules = load_data(args.file)
     # nx.draw(rules, with_labels=True)
     # plt.show()
 
     print(time() - time_start)
 
     time_start = time()
-    answer = check_rule(rules, args.facts_file, count_rules)
+    answer = check_rule(rules, [300,445, 10,11,345,8,9], count_rules)
     print(time() - time_start)
 
     print(answer)

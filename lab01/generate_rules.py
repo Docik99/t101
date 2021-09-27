@@ -105,22 +105,95 @@ def generate_rand_facts(code_max, M):
 
 
 # samples:
-# print(generate_simple_rules(100, 4, 10))
-# print(generate_random_rules(100, 4, 10))
-# print(generate_stairway_rules(100, 4, 10, ["or"]))
-# print(generate_ring_rules(100, 4, 10, ["or"]))
-# print(generate_rand_facts(100, 10))
+print(generate_simple_rules(100, 4, 10))
+print(generate_random_rules(100, 4, 10))
+print(generate_stairway_rules(100, 4, 10, ["or"]))
+print(generate_ring_rules(100, 4, 10, ["or"]))
+print(generate_rand_facts(100, 10))
 
 # generate rules and facts and check time
 
 N = 100000
 M = 1000
-
 rules = generate_simple_rules(100, 4, N)
-r_json = open(f"rules.json", "w")
-json.dump(rules, r_json)
-
+f_json = open(f"rules.json", "w")
+json.dump(rules, f_json)
 facts = generate_rand_facts(100, M)
-f_json = open(f"facts.json", "w")
-json.dump(facts, f_json)
 
+
+# load and validate rules
+# YOUR CODE HERE
+time_start = time()
+oper = 0
+graph = nx.MultiDiGraph()
+count_rules = len(rules)
+
+for rule in rules:
+    condition = rule['if']
+    result = rule['then']
+    oper -= 1
+    for operation in condition:
+
+        for element in condition[operation]:
+            graph.add_edge(element, oper, log=operation)
+            graph.add_edge(oper, element, log=None)
+
+        if isinstance(result, list):
+            graph.add_edge(oper, result[0], log=None)
+        else:
+            graph.add_edge(oper, result, log=None)
+
+print("%d rules add in %f seconds" % (N, time() - time_start))
+
+# check facts vs rules
+#time_start = time()
+
+# YOUR CODE HERE
+for fact in facts:
+    if fact in graph:
+        if isinstance(graph[fact], list):
+            for op in graph[fact]:
+                new_fact = 0
+
+                if graph[fact][op][0]['log'] == 'and':
+                    all_child = -1
+                    fact_child = 0
+                    for nbr in graph[op]:
+                        all_child += 1
+                        if nbr in facts:
+                            fact_child += 1
+                        else:
+                            new_fact = nbr
+                    if fact_child == all_child:
+                        facts.append(new_fact)
+
+                elif graph[fact][op][0]['log'] == 'or':
+                    for nbr in graph[op]:
+                        if nbr not in facts:
+                            if len(graph[nbr]) > 1:
+                                for nbr2 in graph[nbr]:
+                                    if nbr2 != nbr:
+                                        new_fact = nbr
+                                        break
+                            else:  # если узел конечен => это следствие из правила а не условие
+                                new_fact = nbr
+                    facts.append(new_fact)
+
+for edge in range(count_rules * -1, 0):
+    for nbr in graph[edge]:
+        if graph.has_edge(edge, nbr):
+            if nbr not in facts:
+                if graph[edge][nbr][0]['log'] == 'not':
+                    if isinstance(graph[nbr], list):
+                        for dubl_op in graph[nbr]:
+                            for dubl_el in graph[dubl_op]:
+                                if dubl_el not in facts:
+                                    if graph[dubl_op][dubl_el][0]['log'] == 'not':
+                                        facts.append(dubl_el)
+                    else:
+                        if graph[edge][nbr][0]['log'] == 'not':
+                            facts.append(nbr)
+            else:
+                break
+
+print("%d facts validated vs %d rules in %f seconds" % (M, N, time() - time_start))
