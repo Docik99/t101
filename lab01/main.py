@@ -17,7 +17,12 @@ def create_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'file',
+        'rules_file',
+        help='input way to file',
+        type=str,
+    )
+    parser.add_argument(
+        'facts_file',
         help='input way to file',
         type=str,
     )
@@ -31,8 +36,9 @@ def load_data(data_file):
     :return:
         graph: ориентированный мультиграф
     """
-    f_json = open(data_file, 'r')
-    rules = json.load(f_json)
+    r_json = open(data_file, 'r')
+    rules = json.load(r_json)
+    count_rules = len(rules)
     oper = 0
     graph = nx.MultiDiGraph()
 
@@ -51,10 +57,10 @@ def load_data(data_file):
             else:
                 graph.add_edge(oper, result, log=operation)
 
-    return graph
+    return graph, count_rules
 
 
-def check_rule(graphs, facts):
+def check_rule(graphs, facts_file, count_rules):
     """
     Проверка фактов по внесенным правилам
     :param graphs: ориентированный мультиграф
@@ -62,37 +68,38 @@ def check_rule(graphs, facts):
     :return:
         facts: новый список фактов
     """
+    r_json = open(facts_file, 'r')
+    facts = json.load(r_json)
+
     for fact in facts:
         if fact in graphs:
-            if isinstance(graphs[fact], list):
-                for op in graphs[fact]:
-                    new_fact = 0
+            for op in graphs[fact]:
+                new_fact = 0
 
-                    if graphs[fact][op][0]['log'] == 'and':
-                        all_child = -1
-                        fact_child = 0
-                        for nbr in graphs[op]:
-                            all_child += 1
-                            if nbr in facts:
-                                fact_child += 1
-                            else:
-                                new_fact = nbr
-                        if fact_child == all_child:
-                            facts.append(new_fact)
-
-                    elif graphs[fact][op][0]['log'] == 'or':
-                        for nbr in graphs[op]:
-                            if nbr not in facts:
-                                if len(graphs[nbr]) > 1:
-                                    for nbr2 in graphs[nbr]:
-                                        if nbr2 != nbr:
-                                            new_fact = nbr
-                                            break
-                                else:  # если узел конечен => это следствие из правила а не условие
-                                    new_fact = nbr
+                if graphs[fact][op][0]['log'] == 'and':
+                    all_child = -1
+                    fact_child = 0
+                    for nbr in graphs[op]:
+                        all_child += 1
+                        if nbr in facts:
+                            fact_child += 1
+                        else:
+                            new_fact = nbr
+                    if fact_child == all_child:
                         facts.append(new_fact)
 
-    count_rules = len(rules)
+                elif graphs[fact][op][0]['log'] == 'or':
+                    for nbr in graphs[op]:
+                        if nbr not in facts:
+                            if len(graphs[nbr]) > 1:
+                                for nbr2 in graphs[nbr]:
+                                    if nbr2 != nbr:
+                                        new_fact = nbr
+                                        break
+                            else:  # если узел конечен => это следствие из правила а не условие
+                                new_fact = nbr
+                    facts.append(new_fact)
+
     for edge in range(count_rules * -1, 0):
         for nbr in graphs[edge]:
             if graphs.has_edge(edge, nbr):
@@ -119,12 +126,14 @@ if __name__ == '__main__':
 
     time_start = time()
 
-    rules = load_data(args.file)
-    nx.draw(rules, with_labels=True)
-    plt.show()
+    rules, count_rules = load_data(args.rules_file)
+    # nx.draw(rules, with_labels=True)
+    # plt.show()
 
     print(time() - time_start)
 
-    answer = check_rule(rules, [10, 9, 8, 11])
+    time_start = time()
+    answer = check_rule(rules, args.facts_file, count_rules)
+    print(time() - time_start)
 
     print(answer)
