@@ -43,14 +43,23 @@ def load_data(data_file):
         oper -= 1
         for operation in condition:
 
-            for element in condition[operation]:
-                graph.add_edge(element, oper, log=operation)
-                graph.add_edge(oper, element, log=None)
+            if operation == 'and' or operation == 'not':
+                for element in condition[operation]:
+                    graph.add_edge(element, oper, log=operation)
+                    graph.add_edge(oper, element, log=None)
 
-            if isinstance(result, list):
-                graph.add_edge(oper, result[0], log=operation)
-            else:
-                graph.add_edge(oper, result, log=operation)
+                if isinstance(result, list):
+                    graph.add_edge(oper, result[0], log=operation)
+                else:
+                    graph.add_edge(oper, result, log=operation)
+
+            elif operation == 'or':
+                for element in condition[operation]:
+                    if isinstance(result, list):
+                        graph.add_edge(element, result[0], log=operation)
+
+                    else:
+                        graph.add_edge(element, result[0], log=operation)
 
     return graph, count_rules
 
@@ -67,43 +76,41 @@ def check_rule(graph, facts, count_rules):
 
     for fact in facts:
         if fact in graph:
-                for op in graph[fact]:
-                    new_fact = 0
+            for op in graph[fact]:
 
-                    if graph[fact][op][0]['log'] == 'and':
-                        all_child = -1
-                        fact_child = 0
-                        for nbr in graph[op]:
-                            all_child += 1
-                            if nbr in facts:
-                                fact_child += 1
-                            else:
+                if graph[fact][op][0]['log'] == 'and':
+                    new_fact = -1
+                    colvo_arg = True
+                    for nbr in graph[op]:
+                        if nbr not in facts:
+                            if not graph.has_edge(nbr, op):
                                 new_fact = nbr
-                        if fact_child == all_child:
-                            facts.append(new_fact)
+                            else:
+                                colvo_arg = False
+                                break
+                    if colvo_arg and new_fact != -1:
+                        facts.append(new_fact)
 
-                    elif graph[fact][op][0]['log'] == 'or':
-                        for nbr in graph[op]:
-                            if nbr not in facts:
-                                if not graph.has_edge(nbr, op):
-                                    facts.append(nbr)
+                elif graph[fact][op][0]['log'] == 'or':
+                    if op not in facts:
+                        facts.append(op)
 
-    for edge in range(count_rules * -1, 0):
-        for nbr in graph[edge]:
-            if graph.has_edge(edge, nbr):
-                if nbr not in facts:
-                    if graph[edge][nbr][0]['log'] == 'not':
-                        if isinstance(graph[nbr], list):
-                            for dubl_op in graph[nbr]:
-                                for dubl_el in graph[dubl_op]:
-                                    if dubl_el not in facts:
-                                        if graph[dubl_op][dubl_el][0]['log'] == 'not':
-                                            facts.append(dubl_el)
-                        else:
-                            if graph[edge][nbr][0]['log'] == 'not':
-                                facts.append(nbr)
-                else:
-                    break
+    # for edge in range(count_rules * -1, 0):
+    #     for nbr in graph[edge]:
+    #         if graph.has_edge(edge, nbr):
+    #             if nbr not in facts:
+    #                 if graph[edge][nbr][0]['log'] == 'not':
+    #                     if isinstance(graph[nbr], list):
+    #                         for dubl_op in graph[nbr]:
+    #                             for dubl_el in graph[dubl_op]:
+    #                                 if dubl_el not in facts:
+    #                                     if graph[dubl_op][dubl_el][0]['log'] == 'not':
+    #                                         facts.append(dubl_el)
+    #                     else:
+    #                         if graph[edge][nbr][0]['log'] == 'not':
+    #                             facts.append(nbr)
+    #             else:
+    #                 break
 
     return facts
 
@@ -121,7 +128,7 @@ if __name__ == '__main__':
     print(time() - time_start)
 
     time_start = time()
-    answer = check_rule(rules, [8, 9, 13, 99], count_rules)
+    answer = check_rule(rules, [8, 9, 13, 99, 112, 114], count_rules)
     print(time() - time_start)
 
     print(answer)
