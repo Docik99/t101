@@ -21,7 +21,7 @@ def generate_simple_rules(code_max, n_max, n_generate, log_oper_choice=["and", "
             },
             'then': code_max + j
         }
-        #rule = f"{{ \"if\": {{ \"{log_oper}\": {items}, \"then\":{code_max + j}}}}}"
+        # rule = f"{{ \"if\": {{ \"{log_oper}\": {items}, \"then\":{code_max + j}}}}}"
         rules.append(rule)
     shuffle(rules)
     return (rules)
@@ -114,12 +114,11 @@ print(generate_rand_facts(100, 10))
 # generate rules and facts and check time
 
 N = 100000
-M = 1000
+M = 10
 rules = generate_simple_rules(100, 4, N)
 f_json = open(f"rules.json", "w")
 json.dump(rules, f_json)
 facts = generate_rand_facts(100, M)
-
 
 # load and validate rules
 # YOUR CODE HERE
@@ -146,38 +145,31 @@ for rule in rules:
 print("%d rules add in %f seconds" % (N, time() - time_start))
 
 # check facts vs rules
-#time_start = time()
+time_start = time()
 
 # YOUR CODE HERE
 for fact in facts:
     if fact in graph:
-        if isinstance(graph[fact], list):
-            for op in graph[fact]:
-                new_fact = 0
+        for op in graph[fact]:
+            new_fact = 0
 
-                if graph[fact][op][0]['log'] == 'and':
-                    all_child = -1
-                    fact_child = 0
-                    for nbr in graph[op]:
-                        all_child += 1
-                        if nbr in facts:
-                            fact_child += 1
-                        else:
-                            new_fact = nbr
-                    if fact_child == all_child:
-                        facts.append(new_fact)
-
-                elif graph[fact][op][0]['log'] == 'or':
-                    for nbr in graph[op]:
-                        if nbr not in facts:
-                            if len(graph[nbr]) > 1:
-                                for nbr2 in graph[nbr]:
-                                    if nbr2 != nbr:
-                                        new_fact = nbr
-                                        break
-                            else:  # если узел конечен => это следствие из правила а не условие
-                                new_fact = nbr
+            if graph[fact][op][0]['log'] == 'and':
+                all_child = -1
+                fact_child = 0
+                for nbr in graph[op]:
+                    all_child += 1
+                    if nbr in facts:
+                        fact_child += 1
+                    else:
+                        new_fact = nbr
+                if fact_child == all_child:
                     facts.append(new_fact)
+
+            elif graph[fact][op][0]['log'] == 'or':
+                for nbr in graph[op]:
+                    if nbr not in facts:
+                        if not graph.has_edge(nbr, op):
+                            facts.append(nbr)
 
 for edge in range(count_rules * -1, 0):
     for nbr in graph[edge]:

@@ -85,14 +85,8 @@ def check_rule(graph, facts, count_rules):
                     elif graph[fact][op][0]['log'] == 'or':
                         for nbr in graph[op]:
                             if nbr not in facts:
-                                if len(graph[nbr]) > 1:
-                                    for nbr2 in graph[nbr]:
-                                        if nbr2 != nbr:
-                                            new_fact = nbr
-                                            break
-                                else:  # если узел конечен => это следствие из правила а не условие
-                                    new_fact = nbr
-                        facts.append(new_fact)
+                                if not graph.has_edge(nbr, op):
+                                    facts.append(nbr)
 
     for edge in range(count_rules * -1, 0):
         for nbr in graph[edge]:
@@ -121,13 +115,13 @@ if __name__ == '__main__':
     time_start = time()
 
     rules, count_rules = load_data(args.file)
-    # nx.draw(rules, with_labels=True)
-    # plt.show()
+    nx.draw(rules, with_labels=True)
+    plt.show()
 
     print(time() - time_start)
 
     time_start = time()
-    answer = check_rule(rules, [300,445, 10,11,345,8,9], count_rules)
+    answer = check_rule(rules, [8, 9, 13, 99], count_rules)
     print(time() - time_start)
 
     print(answer)
