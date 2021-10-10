@@ -132,14 +132,23 @@ for rule in rules:
     oper -= 1
     for operation in condition:
 
-        for element in condition[operation]:
-            graph.add_edge(element, oper, log=operation)
-            graph.add_edge(oper, element, log=None)
+        if operation == 'and' or operation == 'not':
+            for element in condition[operation]:
+                graph.add_edge(element, oper, log=operation)
+                graph.add_edge(oper, element, log=None)
 
-        if isinstance(result, list):
-            graph.add_edge(oper, result[0], log=None)
-        else:
-            graph.add_edge(oper, result, log=None)
+            if isinstance(result, list):
+                graph.add_edge(oper, result[0], log=operation)
+            else:
+                graph.add_edge(oper, result, log=operation)
+
+        elif operation == 'or':
+            for element in condition[operation]:
+                if isinstance(result, list):
+                    graph.add_edge(element, result[0], log=operation)
+
+                else:
+                    graph.add_edge(element, result, log=operation)
 
 print("%d rules add in %f seconds" % (N, time() - time_start))
 
@@ -151,18 +160,17 @@ for fact in facts:
     print(len(facts))
     if fact in graph:
         for op in graph[fact]:
-            new_fact = 0
-
             if graph[fact][op][0]['log'] == 'and':
-                all_child = -1
-                fact_child = 0
+                new_fact = -1
+                colvo_arg = True
                 for nbr in graph[op]:
-                    all_child += 1
-                    if nbr in facts:
-                        fact_child += 1
-                    else:
-                        new_fact = nbr
-                if fact_child == all_child:
+                    if nbr not in facts:
+                        if not graph.has_edge(nbr, op):
+                            new_fact = nbr
+                        else:
+                            colvo_arg = False
+                            break
+                if colvo_arg and new_fact != -1:
                     facts.append(new_fact)
 
             elif graph[fact][op][0]['log'] == 'or':
