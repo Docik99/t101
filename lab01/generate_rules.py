@@ -113,7 +113,7 @@ print(generate_rand_facts(100, 10))
 # generate rules and facts and check time
 
 N = 100000
-M = 10
+M = 100
 rules = generate_simple_rules(100, 4, N)
 f_json = open(f"rules.json", "w")
 json.dump(rules, f_json)
@@ -174,10 +174,8 @@ for fact in facts:
                     facts.append(new_fact)
 
             elif graph[fact][op][0]['log'] == 'or':
-                for nbr in graph[op]:
-                    if not graph.has_edge(nbr, op):
-                        if nbr not in facts:
-                            facts.append(nbr)
+                if op not in facts:
+                    facts.append(op)
 
 # for edge in range(count_rules * -1, 0):
 #     for nbr in graph[edge]:
