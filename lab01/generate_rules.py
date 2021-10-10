@@ -21,7 +21,6 @@ def generate_simple_rules(code_max, n_max, n_generate, log_oper_choice=["and", "
             },
             'then': code_max + j
         }
-        # rule = f"{{ \"if\": {{ \"{log_oper}\": {items}, \"then\":{code_max + j}}}}}"
         rules.append(rule)
     shuffle(rules)
     return (rules)
@@ -149,6 +148,7 @@ time_start = time()
 
 # YOUR CODE HERE
 for fact in facts:
+    print(len(facts))
     if fact in graph:
         for op in graph[fact]:
             new_fact = 0
@@ -167,25 +167,25 @@ for fact in facts:
 
             elif graph[fact][op][0]['log'] == 'or':
                 for nbr in graph[op]:
-                    if nbr not in facts:
-                        if not graph.has_edge(nbr, op):
+                    if not graph.has_edge(nbr, op):
+                        if nbr not in facts:
                             facts.append(nbr)
 
-for edge in range(count_rules * -1, 0):
-    for nbr in graph[edge]:
-        if graph.has_edge(edge, nbr):
-            if nbr not in facts:
-                if graph[edge][nbr][0]['log'] == 'not':
-                    if isinstance(graph[nbr], list):
-                        for dubl_op in graph[nbr]:
-                            for dubl_el in graph[dubl_op]:
-                                if dubl_el not in facts:
-                                    if graph[dubl_op][dubl_el][0]['log'] == 'not':
-                                        facts.append(dubl_el)
-                    else:
-                        if graph[edge][nbr][0]['log'] == 'not':
-                            facts.append(nbr)
-            else:
-                break
+# for edge in range(count_rules * -1, 0):
+#     for nbr in graph[edge]:
+#         if graph.has_edge(edge, nbr):
+#             if nbr not in facts:
+#                 if graph[edge][nbr][0]['log'] == 'not':
+#                     if isinstance(graph[nbr], list):
+#                         for dubl_op in graph[nbr]:
+#                             for dubl_el in graph[dubl_op]:
+#                                 if dubl_el not in facts:
+#                                     if graph[dubl_op][dubl_el][0]['log'] == 'not':
+#                                         facts.append(dubl_el)
+#                     else:
+#                         if graph[edge][nbr][0]['log'] == 'not':
+#                             facts.append(nbr)
+#             else:
+#                 break
 
 print("%d facts validated vs %d rules in %f seconds" % (M, N, time() - time_start))
