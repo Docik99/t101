@@ -114,7 +114,7 @@ print(generate_rand_facts(100, 10))
 # generate rules and facts and check time
 
 N = 100000
-M = 10
+M = 30
 rules = generate_simple_rules(100, 4, N)
 f_json = open(f"rules.json", "w")
 json.dump(rules, f_json)
@@ -146,6 +146,7 @@ print("%d rules add in %f seconds" % (N, time() - time_start))
 time_start = time()
 
 # YOUR CODE HERE
+facts = list(set(facts))
 for fact in facts:
     print(len(facts))
     if fact in graph:

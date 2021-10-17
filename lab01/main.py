@@ -62,10 +62,13 @@ def check_rule(graph, facts, count_not_rules):
     :return:
         facts: новый список фактов
     """
+    facts = list(set(facts))
 
     for fact in facts:
         if fact in graph:
-            keys = list(graph[fact].keys())
+            print(graph[fact])
+            keys = graph[fact].keys()
+            print(list(keys))
             if len(keys) != 0:
                 if graph[fact][keys[0]][0]['log'] == 'and':
                     if set(graph[fact][keys[0]][0]['dop']).issubset(facts):
