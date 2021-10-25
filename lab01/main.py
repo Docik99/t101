@@ -67,23 +67,25 @@ def check_rule(graph, facts, count_rules):
 
     for fact in facts:
         if fact in graph:
-                for op in graph[fact]:
-                    new_fact = 0
+            for op in graph[fact]:
+                new_fact = 0
 
-                    if graph[fact][op][0]['log'] == 'and':
-                        all_child = -1
-                        fact_child = 0
-                        for nbr in graph[op]:
+                if graph[fact][op][0]['log'] == 'and':
+                    all_child = -1
+                    fact_child = 0
+                    for nbr in graph[op]:
+                        if graph[op][nbr][0]['log'] is not None:
                             all_child += 1
                             if nbr in facts:
                                 fact_child += 1
                             else:
                                 new_fact = nbr
-                        if fact_child == all_child:
-                            facts.append(new_fact)
+                    if fact_child == all_child:
+                        facts.append(new_fact)
 
-                    elif graph[fact][op][0]['log'] == 'or':
-                        for nbr in graph[op]:
+                elif graph[fact][op][0]['log'] == 'or':
+                    for nbr in graph[op]:
+                        if graph[op][nbr][0]['log'] is not None:
                             if nbr not in facts:
                                 if len(graph[nbr]) > 1:
                                     for nbr2 in graph[nbr]:
@@ -92,8 +94,10 @@ def check_rule(graph, facts, count_rules):
                                             break
                                 else:  # если узел конечен => это следствие из правила а не условие
                                     new_fact = nbr
-                        facts.append(new_fact)
+                                facts.append(new_fact)
 
+    app = False
+    block_facts = []
     for edge in range(count_rules * -1, 0):
         for nbr in graph[edge]:
             if graph.has_edge(edge, nbr):
@@ -104,14 +108,22 @@ def check_rule(graph, facts, count_rules):
                                 for dubl_el in graph[dubl_op]:
                                     if dubl_el not in facts:
                                         if graph[dubl_op][dubl_el][0]['log'] == 'not':
-                                            facts.append(dubl_el)
+                                            if nbr not in block_facts:
+                                                facts.append(dubl_el)
+                                                app = True
                         else:
-                            if graph[edge][nbr][0]['log'] == 'not':
+                            if nbr not in block_facts:
                                 facts.append(nbr)
+                                app = True
+                    else:
+                        block_facts.append(nbr)
                 else:
                     break
 
-    return facts
+    if app:
+        return check_rule(graph, facts, count_rules)
+    else:
+        return facts
 
 
 if __name__ == '__main__':
@@ -121,13 +133,13 @@ if __name__ == '__main__':
     time_start = time()
 
     rules, count_rules = load_data(args.file)
-    # nx.draw(rules, with_labels=True)
-    # plt.show()
+    nx.draw(rules, with_labels=True)
+    plt.show()
 
     print(time() - time_start)
 
     time_start = time()
-    answer = check_rule(rules, [300,445, 10,11,345,8,9], count_rules)
+    answer = check_rule(rules, [345, 479, 8, 9], count_rules)
     print(time() - time_start)
 
     print(answer)
