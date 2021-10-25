@@ -6,10 +6,9 @@ import numpy as np
 from lab03.parser import csv_reader, files_name
 
 
-def generate_param(first_data):
+def lin_reg(first_data):
     data = {}
     data['x_i'] = first_data['mileage']
-    # опять посчитаем sin(x) + 1 и добавим шум, получим целевую переменную
     #rand_i = np.random
     data['y_i'] = first_data['price']
     # добавим колонку единиц к единственному столбцу признаков
@@ -33,13 +32,13 @@ def grafic(data, y_hat):
     plt.ylim(data['y_i'].min() - margin, data['y_i'].max() + margin)
     plt.legend(loc='upper right', prop={'size': 20})
     plt.title('True manifold and noised data')
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.xlabel('MILIAGE')
+    plt.ylabel('PRICE')
     plt.show()
 
 
 if __name__ == '__main__':
     files = files_name()
     first_data = csv_reader(files)
-    data, y_hat = generate_param(first_data)
+    data, y_hat = lin_reg(first_data)
     grafic(data, y_hat)
