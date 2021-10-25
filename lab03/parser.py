@@ -9,7 +9,9 @@ def files_name():
     """
     Create correct path/name
     """
-    names = ['audi.csv']
+    names = ['short_bmw.csv']
+    # names = ['audi.csv', 'hyundi.csv', 'bmw.csv', 'merc.csv', 'vauxhall.csv',
+    #          'cclass.csv', 'skoda.csv', 'vw.csv', 'focus.csv', 'toyota.csv', 'ford.csv']
     files = []
     for name in names:
         files.append(f'archive_car/{name}')
