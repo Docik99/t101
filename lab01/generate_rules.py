@@ -2,6 +2,7 @@ from random import choice, shuffle, randint
 from time import time
 import json
 import networkx as nx
+from numba import njit
 
 
 def generate_simple_rules(code_max, n_max, n_generate, log_oper_choice=["and", "or", "not"]):
@@ -21,7 +22,6 @@ def generate_simple_rules(code_max, n_max, n_generate, log_oper_choice=["and", "
             },
             'then': code_max + j
         }
-        # rule = f"{{ \"if\": {{ \"{log_oper}\": {items}, \"then\":{code_max + j}}}}}"
         rules.append(rule)
     shuffle(rules)
     return (rules)
@@ -186,8 +186,10 @@ def check_rule(graph, facts, count_rules):
 
 # generate rules and facts and check time
 
+
 N = 10000
 M = 10
+
 rules = generate_simple_rules(100, 4, N)
 f_json = open(f"rules.json", "w")
 json.dump(rules, f_json)
@@ -196,24 +198,22 @@ facts = generate_rand_facts(100, M)
 # load and validate rules
 # YOUR CODE HERE
 time_start = time()
-oper = 0
+count_not_rules = 0
+oper_and = 0.0
+oper_not = 0
 graph = nx.MultiDiGraph()
-count_rules = len(rules)
 
 for rule in rules:
     condition = rule['if']
     result = rule['then']
-    oper -= 1
     for operation in condition:
 
         for element in condition[operation]:
-            graph.add_edge(element, oper, log=operation)
-            graph.add_edge(oper, element, log=None)
+            if isinstance(result, list):
+                graph.add_edge(element, result[0], log=operation, dop=condition[operation])
 
-        if isinstance(result, list):
-            graph.add_edge(oper, result[0], log=None)
-        else:
-            graph.add_edge(oper, result, log=None)
+            else:
+                graph.add_edge(element, result, log=operation, dop=condition[operation])
 
 print("%d rules add in %f seconds" % (N, time() - time_start))
 
@@ -221,6 +221,35 @@ print("%d rules add in %f seconds" % (N, time() - time_start))
 time_start = time()
 
 # YOUR CODE HERE
+
 check_rule(graph, facts, count_rules)
+facts = list(set(facts))
+for fact in facts:
+    print(len(facts))
+    if fact in graph:
+        keys = list(graph[fact].keys())
+        if len(keys) != 0:
+            if graph[fact][keys[0]][0]['log'] == 'and':
+                if set(graph[fact][keys[0]][0]['dop']).issubset(facts):
+                    for new_fact in graph[fact]:
+                        if new_fact not in facts:
+                            facts.append(new_fact)
+
+            elif graph[fact][keys[0]][0]['log'] == 'or':
+                for new_fact in graph[fact]:
+                    if new_fact not in facts:
+                        facts.append(new_fact)
+
+# nodes = list(graph.nodes())
+# free_facts = set(nodes).difference(set(facts))
+# free_facts = list(free_facts)
+# for fact in free_facts:
+#     keys = list(graph[fact].keys())
+#     if len(keys) != 0:
+#         if graph[fact][keys[0]][0]['log'] == 'not':
+#             if not set(graph[fact][keys[0]][0]['dop']).issubset(facts):
+#                 for new_fact in graph[fact]:
+#                     if new_fact not in facts:
+#                         facts.append(new_fact)
 
 print("%d facts validated vs %d rules in %f seconds" % (M, N, time() - time_start))
