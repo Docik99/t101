@@ -3,3 +3,4 @@
 ##### lab03 - Метод обратного распространения ошибки.
 `Ссылка для скачивания MNIT dataset` _https://pjreddie.com/projects/mnist-in-csv/_
 
+__

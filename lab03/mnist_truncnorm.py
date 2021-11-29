@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 image_size = 28
 image_pixels = image_size * image_size
-train_data = np.loadtxt("./mnist_folder/mnist_train.csv", delimiter=",")
-test_data = np.loadtxt("./mnist_folder/mnist_test.csv", delimiter=",")
+train_data = np.loadtxt("./mnist_train.csv", delimiter=",")
+test_data = np.loadtxt("./mnist_test.csv", delimiter=",")
 
 
 def to_float(image_data):
