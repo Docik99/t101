@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lab03.parser import csv_reader, files_name
+from lab02.parser import csv_reader, files_name
 
 
 def lin_reg(first_data):

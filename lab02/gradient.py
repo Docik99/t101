@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from lab03.parser import csv_reader, files_name
+from lab02.parser import csv_reader, files_name
 
 
 def cal_cost(theta, X, y):

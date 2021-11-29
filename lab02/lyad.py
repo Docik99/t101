@@ -115,26 +115,26 @@ def learning_shedule(t):
 
 
 #Листинг 7 –Полиномиальная регрессия
-def polin_regr(x, y):
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-    size = len(y)
-    poly_features = PolynomialFeatures(degree=3, include_bias=False)
-    x_poly = poly_features.fit_transform(x_train)
-    x_b = np.c_[np.ones((int(size - 0.2 * size), 1)), x_poly]
-    teta = batch_gradient_down_pr(x_b, y_train)
-    t = list(x_test)
-    t.sort()
-    x_test = np.array(t)
-    x_poly = poly_features.fit_transform(x_test)
-    x_new_b = np.c_[np.ones((int(0.2 * size), 1)), x_poly]
-    y_predict = x_new_b.dot(teta)
-    plt.plot(x_test, y_predict, "r-", linewidth=3)
-    plt.plot(x, y, "b.", linewidth=2)
-    plt.show()
-    polynomial_regression = Pipeline(
-        [("poly_features", PolynomialFeatures(degree=3, include_bias=False)), ("lin_reg", LinearRegression()), ])
-    plot_learning_curves(polynomial_regression, x, y)
-    print(teta)
+# def polin_regr(x, y):
+#     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+#     size = len(y)
+#     poly_features = PolynomialFeatures(degree=3, include_bias=False)
+#     x_poly = poly_features.fit_transform(x_train)
+#     x_b = np.c_[np.ones((int(size - 0.2 * size), 1)), x_poly]
+#     teta = batch_gradient_down_pr(x_b, y_train)
+#     t = list(x_test)
+#     t.sort()
+#     x_test = np.array(t)
+#     x_poly = poly_features.fit_transform(x_test)
+#     x_new_b = np.c_[np.ones((int(0.2 * size), 1)), x_poly]
+#     y_predict = x_new_b.dot(teta)
+#     plt.plot(x_test, y_predict, "r-", linewidth=3)
+#     plt.plot(x, y, "b.", linewidth=2)
+#     plt.show()
+#     polynomial_regression = Pipeline(
+#         [("poly_features", PolynomialFeatures(degree=3, include_bias=False)), ("lin_reg", LinearRegression()), ])
+#     plot_learning_curves(polynomial_regression, x, y)
+#     print(teta)
 
 # 5.	Анализ полиномиальной регрессии
 # Листинг 8 – Функция для построения кривых обучения
@@ -183,4 +183,4 @@ if __name__ == '__main__':
     gradient_down(lin_x, lin_y)
     mini_gradient_down(lin_x, lin_y, 100)
     sgd(lin_x, lin_y)
-    plot_learning_curves(,pol_x, pol_y)
+    #plot_learning_curves(,pol_x, pol_y)
